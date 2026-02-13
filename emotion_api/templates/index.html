@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Recommendation System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary: #FF0000; --bg: #121212; --card: #1e1e1e; --text: #ffffff; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        
+        .container { text-align: center; width: 90%; max-width: 500px; }
+        h1 { font-weight: 300; letter-spacing: 2px; margin-bottom: 30px; }
+        
+        /* --- MICROPHONE BUTTON --- */
+        .mic-btn {
+            width: 90px; height: 90px; border-radius: 50%;
+            background: #2a2a2a; border: none; color: white; font-size: 35px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto;
+            position: relative; z-index: 10;
+        }
+        
+        /* Active State (Red) */
+        .mic-btn.active {
+            background: var(--primary);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.4);
+        }
+
+        /* --- 20-BAR VISUALIZER --- */
+        .sound-wave-container {
+            height: 50px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 25px; 
+            margin-bottom: 20px;
+            gap: 3px; 
+        }
+
+        .bar {
+            width: 4px; 
+            height: 6px; 
+            background-color: #fff;
+            border-radius: 4px;
+            transition: height 0.05s ease;
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- UPLOAD & RESULTS --- */
+        .upload-area { margin-top: 10px; }
+        .file-input { display: none; }
+        
+        .upload-btn {
+            background: transparent; border: 1px solid #444; color: #888;
+            padding: 8px 15px; border-radius: 20px; font-size: 14px; cursor: pointer;
+            transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .upload-btn:hover { border-color: white; color: white; background: rgba(255,255,255,0.05); }
+
+        /* --- NEW: DISABLED STATE FOR UPLOAD --- */
+        .upload-btn.disabled {
+            opacity: 0.3;
+            pointer-events: none; /* Prevents clicking */
+            border-color: #333;
+        }
+
+        .status { margin-top: 15px; color: #888; font-size: 14px; min-height: 20px; }
+        .result-box { 
+            background: var(--card); padding: 20px; border-radius: 15px; margin-top: 25px; 
+            display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .emotion-title { font-size: 28px; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
+        iframe { border-radius: 10px; width: 100%; height: 250px; border: none; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Music Recommendation System</h1>
+    
+    <button id="recordBtn" class="mic-btn"><i class="fas fa-microphone"></i></button>
+    
+    <div class="sound-wave-container">
+        <div class="bar" id="bar1"></div><div class="bar" id="bar2"></div><div class="bar" id="bar3"></div><div class="bar" id="bar4"></div>
+        <div class="bar" id="bar5"></div><div class="bar" id="bar6"></div><div class="bar" id="bar7"></div><div class="bar" id="bar8"></div>
+        <div class="bar" id="bar9"></div><div class="bar" id="bar10"></div><div class="bar" id="bar11"></div><div class="bar" id="bar12"></div>
+        <div class="bar" id="bar13"></div><div class="bar" id="bar14"></div><div class="bar" id="bar15"></div><div class="bar" id="bar16"></div>
+        <div class="bar" id="bar17"></div><div class="bar" id="bar18"></div><div class="bar" id="bar19"></div><div class="bar" id="bar20"></div>
+    </div>
+
+    <div class="upload-area">
+        <input type="file" id="fileInput" class="file-input" accept="audio/*">
+        <label for="fileInput" id="uploadLabel" class="upload-btn">
+            <i class="fas fa-upload"></i> Upload Audio File
+        </label>
+    </div>
+
+    <p id="status" class="status">Tap mic to speak...</p>
+
+    <div id="resultBox" class="result-box">
+        <div class="emotion-title" id="emotionText">NEUTRAL</div>
+        <div style="color: #aaa; font-size: 0.9em;" id="confText">Confidence: 0%</div>
+        <p style="margin-top:15px;">Recommended Track:</p>
+        <div id="playerContainer"></div>
+    </div>
+</div>
+
+<script>
+    const recordBtn = document.getElementById('recordBtn');
+    const fileInput = document.getElementById('fileInput');
+    const uploadLabel = document.getElementById('uploadLabel'); // New Reference
+    const status = document.getElementById('status');
+    const resultBox = document.getElementById('resultBox');
+    
+    const bars = [];
+    for(let i=1; i<=20; i++) bars.push(document.getElementById(`bar${i}`));
+
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+    let audioContext, analyser, source, animationId;
+
+    const musicDB = {
+        'JOY': "UqyT8IEBkvY", 'SADNESS': "hLQl3WQQoQ0", 'ANGER': "eHbNU9WuVgw",
+        'FEAR': "TZ827lkktYs", 'DISGUST': "zlJDTxahav0", 'NEUTRAL': "BCxTQq0UiFs"
+    };
+
+    // --- Helper to Toggle Upload Button ---
+    function toggleUploadInput(enable) {
+        fileInput.disabled = !enable;
+        if (enable) {
+            uploadLabel.classList.remove('disabled');
+        } else {
+            uploadLabel.classList.add('disabled');
+        }
+    }
+
+    recordBtn.addEventListener('click', async () => {
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioContext.state === 'suspended') await audioContext.resume();
+
+                // 1. LOCK UI
+                isRecording = true;
+                toggleUploadInput(false); // <--- DISABLE UPLOAD
+                recordBtn.classList.add('active'); 
+                status.innerText = "Listening...";
+                resultBox.style.display = 'none';
+
+                startVisualizer(stream);
+
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = e => { 
+                    if (e.data.size > 0) {
+                        audioChunks.push(e.data); 
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    stopVisualizer(); 
+                    if (audioChunks.length === 0) {
+                        status.innerText = "Error: No audio recorded.";
+                        return;
+                    }
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    status.innerText = "Sending audio...";
+                    sendToBackend(audioBlob, "mic_recording.webm");
+                };
+
+                mediaRecorder.start(1000);
+
+            } catch (err) {
+                alert("Error: " + err.message);
+                toggleUploadInput(true); // Re-enable if error
+            }
+        } else {
+            // STOP
+            mediaRecorder.stop();
+            isRecording = false;
+            toggleUploadInput(true); // <--- RE-ENABLE UPLOAD
+            recordBtn.classList.remove('active');
+            status.innerText = "Processing...";
+        }
+    });
+
+    function startVisualizer(stream) {
+        analyser = audioContext.createAnalyser();
+        source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+        analyser.fftSize = 128; 
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        const updateBars = () => {
+            if (!isRecording) return;
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Map 20 bars to Human Voice Frequencies
+            const indexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32];
+
+            bars.forEach((bar, i) => {
+                let dataIndex = indexes[i] < bufferLength ? indexes[i] : bufferLength - 1;
+                let value = dataArray[dataIndex] || 0; 
+                let h = 6 + (value / 3); 
+                if(h > 60) h = 60; 
+                bar.style.height = `${h}px`;
+            });
+            animationId = requestAnimationFrame(updateBars);
+        };
+        updateBars();
+    }
+
+    function stopVisualizer() {
+        if (animationId) cancelAnimationFrame(animationId);
+        bars.forEach(bar => { bar.style.height = "6px"; });
+    }
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            resultBox.style.display = 'none';
+            status.innerText = `Uploading: ${file.name}...`;
+            sendToBackend(file, file.name);
+        }
+    });
+
+    async function sendToBackend(fileObject, filename) {
+        const formData = new FormData();
+        formData.append("file", fileObject, filename);
+
+        try {
+            const response = await fetch('/predict_emotion', {
+                method: 'POST',
+                headers: { 'Client-ID': 'test_app_01' },
+                body: formData
+            });
+            const data = await response.json();
+            
+            if (data.error) status.innerText = "Error: " + data.error;
+            else {
+                showResult(data.emotion, data.confidence);
+                status.innerText = "Analysis Complete.";
+            }
+        } catch (error) {
+            status.innerText = "Server Error. Is app.py running?";
+        }
+    }
+
+    function showResult(emotion, conf) {
+        document.getElementById('emotionText').innerText = emotion;
+        document.getElementById('confText').innerText = `Confidence: ${conf}`;
+        const videoId = musicDB[emotion] || musicDB['NEUTRAL'];
+        document.getElementById('playerContainer').innerHTML = 
+            `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        resultBox.style.display = 'block';
+    }
+</script>
+</body>
+</html>
