@@ -23,10 +23,10 @@ Installation & Setup
 - requirement.txt
 
 3. Database Initialisation (Optional)
->> flask --app app seed-db
+flask --app app seed-db
 
 4. Start the Server
->> python app.py
+python app.py
 
 5. Open new terminal (need to install ngrok)
 >> ngrok http 5000
