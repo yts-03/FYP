@@ -11,7 +11,7 @@ emotion_api/
 ├── uploads/                   # Temporary storage for processing audio files
 └── templates/
     └── index.html             # Simple Frontend for testing the API
-
+```
 -----------------------
 Installation & Setup
 -----------------------
