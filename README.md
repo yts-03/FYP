@@ -1,16 +1,16 @@
+```text
 emotion_api/
-├── app.py                  # Main Flask Application (API Endpoints & Music Mapping Logic)
-├── functions.py            # Core AI Logic (Data Loading, Feature Extraction, Model Building)
-├── experiment.ipynb        # Jupyter Notebook for Training, Evaluation & Visualisation
-├── model_bimodal_6class.h5 # Pre-trained Keras Model Weights
-├── scaler_6class.pkl       # Saved StandardScaler for feature normalisation
-├── label_encoder_6class.pkl # Saved LabelEncoder for emotion classes
+├── app.py                     # Main Flask Application (API Endpoints & Music Mapping Logic)
+├── functions.py               # Core AI Logic (Data Loading, Feature Extraction, Model Building)
+├── experiment.ipynb           # Jupyter Notebook for Training, Evaluation & Visualisation
+├── model_bimodal_6class.h5    # Pre-trained Keras Model Weights
+├── scaler_6class.pkl          # Saved StandardScaler for feature normalisation
+├── label_encoder_6class.pkl   # Saved LabelEncoder for emotion classes
 ├── instance/
-│   └── api_database.db     # SQLite Database
-├── uploads/                # Temporary storage for processing audio files
+│   └── api_database.db        # SQLite Database
+├── uploads/                   # Temporary storage for processing audio files
 └── templates/
-    └── index.html          # Simple Frontend for testing the API
-
+    └── index.html             # Simple Frontend for testing the API
 
 -----------------------
 Installation & Setup
