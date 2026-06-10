@@ -1083,6 +1083,7 @@ Sr No.,Utterance,Speaker,Emotion,Sentiment,Dialogue_ID,Utterance_ID,Season,Episo
 1149,"Yes, yes I do.",Phoebe,neutral,neutral,110,4,6,11,"00:07:03,589","00:07:05,757"
 1150,"God, oh its just perfect!",Phoebe,joy,positive,110,5,6,11,"00:07:05,925","00:07:09,219"
 1152,I bet it has a great story behind it too.,Phoebe,joy,positive,110,6,6,11,"00:07:09,387","00:07:11,596"
+1153,Did they tell you anything?,Phoebe,neutral,neutral,110,7,6,11,"00:07:11,764","00:07:13,890"
 1155,"Yes! That I know, this is from White Plains.",Rachel,joy,positive,110,8,6,11,"00:07:14,058","00:07:16,935"
 1156,"White Plains. Oh, it sounds like such a magical place.",Phoebe,joy,positive,110,9,6,11,"00:07:19,188","00:07:23,608"
 1157,"So, you still dont think Im boyfriend material?",Chandler,anger,negative,111,0,3,25,"00:11:50,876","00:11:55,588"
