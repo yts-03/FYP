@@ -32,7 +32,7 @@ class Config:
     # Training Parameters Settings
     BATCH_SIZE = 32
     LEARNING_RATE = 0.001
-    EPOCHS = 40
+    EPOCHS = 30
     DROPOUT = 0.3
     
     # Default Classes
