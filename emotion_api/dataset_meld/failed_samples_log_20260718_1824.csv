@@ -1,0 +1,3 @@
+split,file_path,reason
+train,c:\Users\User\Downloads\[YTS]Github\FYP\emotion_api\dataset_meld\audio\wav_clean\wav_train\dia125_utt3.wav,missing_audio
+dev,c:\Users\User\Downloads\[YTS]Github\FYP\emotion_api\dataset_meld\audio\wav_clean\wav_dev\dia110_utt7.wav,missing_audio
